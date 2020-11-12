@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.subunit.a { fill: #8ad5e6; }
+.subunit.b { fill: #b0efd1; }
+.subunit.c { fill: #f0dec9; }
+.subunit.d { fill: #fab8ca; }
+.subunit.e { fill: #ff8ca4; }
+
+.base_water{
+	fill: 'blue';
+	/*opacity: 0.5;*/
+}
+
+</style>
+<body>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 960,
+    height = 1160;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("topo_borough_update.json", function(error, boro) {
+
+	d3.json("hydro.json", function(error, hydro){
+
+	if (error) return console.error(error);
+
+	// Setup stuff
+	var projection = d3.geo.albers()
+	    .center([0, 40.7])
+	    .rotate([74, 0])
+	    .parallels([50, 60])
+	    .scale(130000)
+	    .translate([width / 2, height / 2]);
+	
+	var path = d3.geo.path().projection(projection);
+
+	// Do stuff with the data 
+ 	var geoj = topojson.feature(boro, boro.objects.boroughs).features;
+ 	vals = ['a', 'b', 'c', 'd', 'e']
+
+	for (const [i, v] of geoj.entries()) {
+
+	  geoj[i]['val']=vals[i]
+
+	};
+
+	svg.selectAll(".subunit")
+    	.data(geoj)
+  		.enter().append("path")
+    	.attr("class", function(d) { return "subunit " + d.val; })
+    	.attr("d", path);
+
+    var hydroj = topojson.feature(hydro, hydro.objects.Hydrography);
+
+    svg.append("path")
+      .datum(hydroj)
+      .attr("d", path)
+      .attr("class", "base_water");
+
+
+})});
+
+
+</script>
